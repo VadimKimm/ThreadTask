@@ -17,6 +17,19 @@ class ChipStorage {
         }
     }
 
+    ///Returns true if storage can give item to work with, otherwise returns false
+    func getStorageState() -> Bool {
+        if chipArray.count > 0 || isGeneratingThreadInProccess {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    func getStorageChipsCount() -> Int {
+        chipArray.count
+    }
+
     func toggleIsGeneratingThreadInProccess() {
         isGeneratingThreadInProccess.toggle()
     }
