@@ -3,7 +3,8 @@ import Foundation
 class ChipStorage {
     private var chipArray = [Chip]()
     private let queue = DispatchQueue(label: "myQueue", qos: .utility, attributes: .concurrent)
-
+    private var isGeneratingThreadInProccess = true
+    
     func appendChip(_ value: Chip) {
         queue.async(flags: .barrier) {
             self.chipArray.append(value)
@@ -14,6 +15,10 @@ class ChipStorage {
         queue.sync {
             return chipArray.removeLast()
         }
+    }
+
+    func toggleIsGeneratingThreadInProccess() {
+        isGeneratingThreadInProccess.toggle()
     }
 }
 
@@ -41,6 +46,7 @@ class GeneratingThread: Thread {
     @objc func runTimedCode() {
         guard seconds > 0 else {
             timer.invalidate()
+            storage.toggleIsGeneratingThreadInProccess()
             self.cancel()
             return
         }
