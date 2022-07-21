@@ -51,6 +51,19 @@ class GeneratingThread: Thread {
     }
 }
 
+class WorkingThread: Thread {
+
+    private var storage: ChipStorage
+    private var counter = 1
+
+    init(storage: ChipStorage) {
+        self.storage = storage
+    }
+
+    override func main() {
+    }
+}
+
 
 let storage = ChipStorage()
 
