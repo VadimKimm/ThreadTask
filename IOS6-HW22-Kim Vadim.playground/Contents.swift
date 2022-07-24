@@ -51,6 +51,7 @@ class GeneratingThread: Thread {
     }
 
     override func main() {
+        print("Начало выполнения генерирующего потока: \(Date.getCurrentTime())\n")
         timer = Timer.scheduledTimer(timeInterval: 2,
                                      target: self,
                                      selector: #selector(runTimedCode),
@@ -61,15 +62,16 @@ class GeneratingThread: Thread {
     }
 
     @objc func runTimedCode() {
+        seconds -= 2
         guard seconds > 0 else {
             timer.invalidate()
             storage.toggleIsGeneratingThreadInProccess()
+            print("\nКонец выполнения генерирующего потока: \(Date.getCurrentTime())\n")
             self.cancel()
             return
         }
         storage.appendChip(Chip.make())
-        print("Добавлена микросхема \(counter)")
-        seconds -= 2
+        print("Добавлена микросхема \(counter) - \(Date.getCurrentTime())")
         counter += 1
     }
 }
@@ -84,20 +86,21 @@ class WorkingThread: Thread {
     }
 
     override func main() {
+        print("Начало выполнения рабочего потока: \(Date.getCurrentTime())\n")
         while storage.getStorageState() {
             while !storage.boolPredicate {
                 storage.condition.wait()
             }
 
             storage.getChip().sodering()
-            print("Припаяна микросхема  \(counter)")
+            print("Припаяна микросхема  \(counter) - \(Date.getCurrentTime())")
             counter += 1
 
             if storage.getStorageChipsCount() < 1  {
                 storage.boolPredicate = false
             }
         }
-
+        print("\nКонец выполнения рабочего потока: \(Date.getCurrentTime())")
         self.cancel()
     }
 }
@@ -109,4 +112,3 @@ generatingThread.start()
 
 let workingThread = WorkingThread(storage: storage)
 workingThread.start()
-
