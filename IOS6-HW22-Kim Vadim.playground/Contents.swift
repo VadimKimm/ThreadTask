@@ -5,12 +5,13 @@ class ChipStorage {
     private let queue = DispatchQueue(label: "myQueue", qos: .utility, attributes: .concurrent)
     private var isGeneratingThreadInProccess = true
     var boolPredicate = false
-    let condition = NSCondition()
+    private let condition = NSCondition()
 
     func appendChip(_ value: Chip) {
         queue.async(flags: .barrier) {
             self.chipArray.append(value)
             self.boolPredicate = true
+            //inform Working Thread that chip could be taken from storage to work with
             self.condition.signal()
         }
     }
@@ -36,6 +37,10 @@ class ChipStorage {
 
     func toggleIsGeneratingThreadInProccess() {
         isGeneratingThreadInProccess.toggle()
+    }
+
+    func waitForChipBeenAdded() {
+        self.condition.wait()
     }
 }
 
@@ -89,7 +94,8 @@ class WorkingThread: Thread {
         print("Начало выполнения рабочего потока: \(Date.getCurrentTime())\n")
         while storage.getStorageState() {
             while !storage.boolPredicate {
-                storage.condition.wait()
+                //wait for the moment when the chip been added to the storage
+                storage.waitForChipBeenAdded()
             }
 
             storage.getChip().sodering()
