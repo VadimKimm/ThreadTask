@@ -10,9 +10,6 @@ class ChipStorage {
     func appendChip(_ value: Chip) {
         queue.async(flags: .barrier) {
             self.chipArray.append(value)
-            self.boolPredicate = true
-            //inform Working Thread that chip could be taken from storage to work with
-            self.condition.signal()
         }
     }
 
@@ -41,6 +38,10 @@ class ChipStorage {
 
     func waitForChipBeenAdded() {
         self.condition.wait()
+    }
+
+    func informThatChipBeenAdded() {
+        self.condition.signal()
     }
 }
 
@@ -76,6 +77,9 @@ class GeneratingThread: Thread {
             return
         }
         storage.appendChip(Chip.make())
+        storage.boolPredicate = true
+        //inform Working Thread that chip could be taken from storage to work with
+        storage.informThatChipBeenAdded()
         print("Добавлена микросхема \(counter) - \(Date.getCurrentTime())")
         counter += 1
     }
@@ -106,6 +110,7 @@ class WorkingThread: Thread {
                 storage.boolPredicate = false
             }
         }
+
         print("\nКонец выполнения рабочего потока: \(Date.getCurrentTime())")
         self.cancel()
     }
